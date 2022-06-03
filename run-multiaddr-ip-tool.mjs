@@ -40,10 +40,18 @@ async function run () {
 
   const fetchJs = (await fetch(`${minerInfoSubsetLatestUrl}`)).json()
   await notebook.redefine('minerInfoSubsetLatest', fetchJs)
+  await notebook.redefine('dhtAddrsLatest', { miners: {} })
+  await notebook.redefine('minTimestamp', new Date('2020-08-23'))
     
-  console.log(await notebook.value("minerInfoSubsetLatest"))
+  // console.log(await notebook.value("minerInfoSubsetLatest"))
+  console.log(await notebook.value("miners"))
+  //console.log(await notebook.value("minerMultiaddrIps"))
   fastify.close()
 }
 
-run()
+try {
+  run()
+} catch (e) {
+  console.error('Error', e)
+}
 
