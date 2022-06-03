@@ -38,13 +38,13 @@ async function parseMinerInfos (date) {
       if (!epochs[epoch]) {
         epochs[epoch] = []
       }
-      epochs[epoch].push({
-        epoch,
-        minerId,
-        sectorSize,
-        peerId,
-        multiaddrsDecoded: JSON.parse(multiAddress)
-      })
+      if (multiAddress !== 'null') {
+        epochs[epoch].push({
+          epoch,
+          minerId,
+          multiaddrsDecoded: JSON.parse(multiAddress)
+        })
+      }
     }
   })
 
