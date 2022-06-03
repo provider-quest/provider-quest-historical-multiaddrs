@@ -1,10 +1,49 @@
 import observableRuntime from "@observablehq/runtime"
 import define from "@jimpick/provider-quest-multiaddr-ip-tool"
 import './fetch-polyfill.mjs'
+import Fastify from 'fastify'
+import fastifyStatic from '@fastify/static'
+import fastifyCors from '@fastify/cors'
+import 'dotenv/config'
 
-const runtime = new observableRuntime.Runtime()
-const main = runtime.module(define)
+const workDir = process.env.WORK_DIR || '.'
 
+const fastify = Fastify({
+  logger: true
+})
 
-main.value("minerInfoSubsetLatest").then(value => console.log(value))
+fastify.register(fastifyCors, {
+  origin: '*'
+})
+
+fastify.register(fastifyStatic, {
+  root: workDir + '/miner-info-subset-latest/',
+  prefix: '/miner-info-subset-latest/'
+})
+
+const startFastify = async () => {
+  try {
+    await fastify.listen(3000, '0.0.0.0')
+  } catch (err) {
+    fastify.log.error(err)
+    process.exit(1)
+  }
+}
+startFastify()
+
+async function run () {
+  const runtime = new observableRuntime.Runtime()
+  const notebook = runtime.module(define)
+
+  const date = '2022-05-12'
+  const minerInfoSubsetLatestUrl = `http://localhost:3000/miner-info-subset-latest/miner-info-subset-latest-${date}.json`
+
+  const fetchJs = (await fetch(`${minerInfoSubsetLatestUrl}`)).json()
+  await notebook.redefine('minerInfoSubsetLatest', fetchJs)
+    
+  console.log(await notebook.value("minerInfoSubsetLatest"))
+  fastify.close()
+}
+
+run()
 
