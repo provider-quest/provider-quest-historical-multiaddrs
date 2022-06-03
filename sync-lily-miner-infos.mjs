@@ -38,13 +38,11 @@ async function parseMinerInfos (date) {
       if (!epochs[epoch]) {
         epochs[epoch] = []
       }
-      if (multiAddress !== 'null') {
-        epochs[epoch].push({
-          epoch,
-          minerId,
-          multiaddrsDecoded: JSON.parse(multiAddress)
-        })
-      }
+      epochs[epoch].push({
+        epoch,
+        minerId,
+        multiaddrsDecoded: JSON.parse(multiAddress)
+      })
     }
   })
 
@@ -66,40 +64,10 @@ async function parseMinerInfos (date) {
         // console.log(epochs[epoch])
         for (const record of epochs[epoch]) {
           const { minerId, ...rest } = record
-          minerInfoLatest.set(minerId, rest)
-        }
-        /*
-        for (const { minerId, ownerId } of epochs[epoch]) {
-          if (!seenMiners.has(minerId)) {
-            // console.log(`Miner ${minerId} at ${epoch} - ${date}`)
-            // console.log(` Owner: ${ownerId} ${idToAddress.get(ownerId)}`)
-            let address = idToAddress.get(ownerId)
-            let funded
-            let lastEpoch = Number(epoch)
-            let displayed = new Set()
-            displayed.add(address)
-            while(funded = addressFunded.get(address)) {
-              const { from, epoch } = funded
-              // console.log(`   @${epoch}: ${addressToId.get(from)} ${from} -> ${addressToId.get(address)} ${address}`)
-              if (epoch > lastEpoch) {
-                console.error(`      Warning: SP ${minerId}: Funded at future ${epoch} > ${lastEpoch}: ${addressToId.get(address)} ${address}`)
-                // addressFunded.set(address, null) // Try to break cycles
-                // break
-              }
-              if (displayed.has(from)) {
-                console.error(`      Error: loop detected - ${minerId}`)
-                break
-              }
-              address = from
-              lastEpoch = epoch
-            }
-            seenMiners.set(minerId, {
-              epoch,
-              ownerId
-            })
+          if (rest.multiaddrsDecoded || minerInfoLatest.has(minerId)) {
+            minerInfoLatest.set(minerId, rest)
           }
         }
-        */
       }
       resolve()
     })
