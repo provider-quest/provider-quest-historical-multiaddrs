@@ -1,0 +1,3 @@
+[submodule "observable-notebooks"]
+	path = observable-notebooks
+	url = git@github.com:provider-quest/observable-notebooks.git
