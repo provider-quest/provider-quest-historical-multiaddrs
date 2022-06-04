@@ -40,6 +40,7 @@ async function parseMinerInfos (date) {
       }
       epochs[epoch].push({
         epoch,
+        timestamp: epochToDate(epoch),
         minerId,
         multiaddrsDecoded: JSON.parse(multiAddress)
       })
