@@ -34,9 +34,8 @@ function renderList (dirs, files) {
 }
 
 fastify.register(fastifyStatic, {
-  root: workDir + '/miner-info-subset-latest/',
-  prefix: '/miner-info-subset-latest',
-  prefixAvoidTrailingSlash: true,
+  root: __dirname + '/observable-notebooks/',
+  prefix: '/notebooks/',
   list: {
     format: 'html',
     render: renderList,
@@ -45,8 +44,21 @@ fastify.register(fastifyStatic, {
 })
 
 fastify.register(fastifyStatic, {
-  root: __dirname + '/observable-notebooks/',
-  prefix: '/notebooks/',
+  root: workDir + '/miner-info-subset-latest/',
+  prefix: '/miner-info-subset-latest',
+  prefixAvoidTrailingSlash: true,
+  list: {
+    format: 'html',
+    render: renderList,
+    names: ['index', 'index.html', '/']
+  },
+  decorateReply: false
+})
+
+fastify.register(fastifyStatic, {
+  root: workDir + '/dht-addrs-latest/',
+  prefix: '/dht-addrs-latest',
+  prefixAvoidTrailingSlash: true,
   list: {
     format: 'html',
     render: renderList,
@@ -87,10 +99,13 @@ async function run () {
         console.log(`File already exists, skipping. ${jsonFilename}`)
     } else {
       console.log('Date:', date)
-      const minerInfoSubsetLatestUrl = `http://localhost:3000/miner-info-subset-latest/miner-info-subset-latest-${date}.json`
 
+      const minerInfoSubsetLatestUrl = `http://localhost:3000/miner-info-subset-latest/miner-info-subset-latest-${date}.json`
       await notebook.redefine('minerInfoSubsetLatestUrl', minerInfoSubsetLatestUrl)
-      await notebook.redefine('dhtAddrsLatest', { miners: {} })
+
+      const dhtAddrsLatestUrl = `http://localhost:3000/dht-addrs-latest/dht-addrs-latest-${date}.json`
+      await notebook.redefine('dhtAddrsLatestUrl', dhtAddrsLatestUrl)
+
       await notebook.redefine('minTimestamp', new Date('2020-08-23'))
 
       const minerMultiaddrIps = await notebook.value("minerMultiaddrIps")
