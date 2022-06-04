@@ -10,7 +10,7 @@
   "author": "Jim Pick (@jimpick)",
   "license": "MIT/Apache-2 (Permissive License Stack)",
   "dependencies": {
-    "@alex.garcia/observable-prerender": "^0.4.3",
+    "@jimpick/observable-prerender-localhost": "^0.4.3-1",
     "@aws-sdk/client-s3": "^3.100.0",
     "@fastify/cors": "^7.0.0",
     "@fastify/static": "^5.0.2",
