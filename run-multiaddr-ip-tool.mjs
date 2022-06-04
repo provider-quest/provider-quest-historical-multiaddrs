@@ -44,8 +44,10 @@ async function run () {
   await notebook.redefine('minTimestamp', new Date('2020-08-23'))
     
   // console.log(await notebook.value("minerInfoSubsetLatest"))
-  console.log(await notebook.value("miners"))
-  //console.log(await notebook.value("minerMultiaddrIps"))
+  // console.log(await notebook.value("miners"))
+  // console.log(await notebook.value("minersCombined"))
+  console.log(await notebook.value("minerMultiaddrs"))
+  // console.log(await notebook.value("minerMultiaddrIps"))
   fastify.close()
 }
 
