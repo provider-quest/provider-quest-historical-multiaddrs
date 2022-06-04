@@ -9,6 +9,8 @@ import 'dotenv/config'
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const workDir = process.env.WORK_DIR || '.'
+const outputDir = `${workDir}/multiaddrs-ips-latest`
+fs.mkdirSync(outputDir, { recursive: true })
 
 const fastify = Fastify({
   logger: true
@@ -70,18 +72,36 @@ async function run () {
     // { headless: false }
   )
 
-  const date = '2022-05-12'
-  const minerInfoSubsetLatestUrl = `http://localhost:3000/miner-info-subset-latest/miner-info-subset-latest-${date}.json`
+  const files = fs.readdirSync(`${workDir}/miner-info-subset-latest`)
 
-  await notebook.redefine('minerInfoSubsetLatestUrl', minerInfoSubsetLatestUrl)
-  await notebook.redefine('dhtAddrsLatest', { miners: {} })
-  await notebook.redefine('minTimestamp', new Date('2020-08-23'))
-    
-  // console.log(await notebook.value("minerInfoSubsetLatest"))
-  // console.log(await notebook.value("miners"))
-  // console.log(await notebook.value("minersCombined"))
-  // console.log(await notebook.value("minerMultiaddrs"))
-  console.log(await notebook.value("minerMultiaddrIps"))
+  const dates = []
+  for (const file of files) {
+    const match = file.match(/miner-info-subset-latest-(.*)\.json/)
+    if (match) dates.push(match[1])
+  }
+
+  for (const date of dates) {
+    const jsonFilename = `multiaddrs-ips-${date}.json`
+    const dest =`${outputDir}/${jsonFilename}`
+    if (fs.existsSync(dest)) {
+        console.log(`File already exists, skipping. ${jsonFilename}`)
+    } else {
+      console.log('Date:', date)
+      const minerInfoSubsetLatestUrl = `http://localhost:3000/miner-info-subset-latest/miner-info-subset-latest-${date}.json`
+
+      await notebook.redefine('minerInfoSubsetLatestUrl', minerInfoSubsetLatestUrl)
+      await notebook.redefine('dhtAddrsLatest', { miners: {} })
+      await notebook.redefine('minTimestamp', new Date('2020-08-23'))
+
+      const minerMultiaddrIps = await notebook.value("minerMultiaddrIps")
+      const output = {
+        date,
+        multiaddrsIps: minerMultiaddrIps
+      }
+      fs.writeFileSync(dest, JSON.stringify(output, null, 2))
+    }
+  }
+
   await notebook.browser.close()
   fastify.close()
 }
