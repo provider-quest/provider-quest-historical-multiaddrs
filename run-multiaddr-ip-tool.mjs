@@ -4,6 +4,7 @@ import { load } from '@jimpick/observable-prerender-localhost'
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
 import fastifyCors from '@fastify/cors'
+import dateFns from 'date-fns'
 import 'dotenv/config'
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
@@ -102,11 +103,19 @@ async function run () {
 
       const minerInfoSubsetLatestUrl = `http://localhost:3000/miner-info-subset-latest/miner-info-subset-latest-${date}.json`
       await notebook.redefine('minerInfoSubsetLatestUrl', minerInfoSubsetLatestUrl)
+      console.log(minerInfoSubsetLatestUrl)
 
       const dhtAddrsLatestUrl = `http://localhost:3000/dht-addrs-latest/dht-addrs-latest-${date}.json`
       await notebook.redefine('dhtAddrsLatestUrl', dhtAddrsLatestUrl)
+      console.log(dhtAddrsLatestUrl)
 
-      await notebook.redefine('minTimestamp', new Date('2020-08-23'))
+      const minMinerInfoTimestamp = new Date('2020-08-23')
+      await notebook.redefine('minMinerInfoTimestamp', minMinerInfoTimestamp)
+      console.log('minMinerInfoTimestamp', minMinerInfoTimestamp.toISOString())
+
+      const minDhtTimestamp = agnosticAddDays(new Date(date), -7)
+      await notebook.redefine('minDhtTimestamp', minDhtTimestamp)
+      console.log('minDhtTimestamp', minDhtTimestamp.toISOString())
 
       const minerMultiaddrIps = await notebook.value("minerMultiaddrIps")
       const output = {
@@ -127,3 +136,15 @@ try {
   console.error('Error', e)
 }
 
+function agnosticAddDays(date, amount) {
+  // https://github.com/date-fns/date-fns/issues/571#issuecomment-602496322
+  const originalTZO = date.getTimezoneOffset();
+  const endDate = dateFns.addDays(date, amount);
+  const endTZO = endDate.getTimezoneOffset();
+
+  const dstDiff = originalTZO - endTZO;
+
+  return dstDiff >= 0
+    ? dateFns.addMinutes(endDate, dstDiff)
+    : dateFns.subMinutes(endDate, Math.abs(dstDiff));
+}
