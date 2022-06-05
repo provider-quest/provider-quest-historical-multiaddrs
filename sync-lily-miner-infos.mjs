@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { parse } from 'csv-parse'
 import { epochToDate } from './filecoin-epochs.mjs'
+import agnosticAddDays from './agnostic-add-days.mjs'
 import 'dotenv/config'
 
 import lilyDates from './lily-dates.mjs'
@@ -110,11 +111,22 @@ async function run () {
 
   const datesToProcess = [...availableDates]
 
+  let lastDate = null
   for (const date of datesToProcess) {
+    if (lastDate) {
+      while (true) {
+        const nextDate = agnosticAddDays(lastDate, 1)
+        const nextDateString = nextDate.toISOString().slice(0, 10)
+        if (nextDateString === date) break
+        await writeMinerInfoSubsetLatest(nextDateString)
+        lastDate = nextDate
+      }
+    }
     // console.log('Date: ', date)
     await syncLily('miner_infos', date)
     await parseMinerInfos(date)
     await writeMinerInfoSubsetLatest(date)
+    lastDate = new Date(date)
   }
 
   console.log('Done.')

@@ -2,6 +2,7 @@ import fs from 'fs'
 import { parse } from 'csv-parse'
 import { epochToDate } from './filecoin-epochs.mjs'
 import dateFns from 'date-fns'
+import agnosticAddDays from './agnostic-add-days.mjs'
 import 'dotenv/config'
 
 import lilyDates from './lily-dates.mjs'
@@ -37,14 +38,14 @@ function writeDhtAddrsLatest (date) {
 }
 
 async function run () {
-  const availableDates = []
-  const dates = await lilyDates('miner_infos')
-  for (const date of dates) {
-    availableDates.push(date)
+  const minerInfoFiles = fs.readdirSync(`${workDir}/miner-info-subset-latest`)
+  const dates = []
+  for (const file of minerInfoFiles) {
+    const match = file.match(/miner-info-subset-latest-(.*)\.json/)
+    if (match) dates.push(match[1])
   }
-  console.log(`${availableDates.length} available dates, last: ${availableDates.slice(-1)[0]}`)
 
-  const datesToProcess = [...availableDates]
+  const datesToProcess = [...dates]
 
   const inputDir = `${workDir}/sync/dht-addrs`
 
@@ -94,17 +95,4 @@ try {
   run()
 } catch (e) {
   console.error('Exception:', e)
-}
-
-function agnosticAddDays(date, amount) {
-  // https://github.com/date-fns/date-fns/issues/571#issuecomment-602496322
-  const originalTZO = date.getTimezoneOffset();
-  const endDate = dateFns.addDays(date, amount);
-  const endTZO = endDate.getTimezoneOffset();
-
-  const dstDiff = originalTZO - endTZO;
-
-  return dstDiff >= 0
-    ? dateFns.addMinutes(endDate, dstDiff)
-    : dateFns.subMinutes(endDate, Math.abs(dstDiff));
 }

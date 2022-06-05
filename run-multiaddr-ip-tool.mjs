@@ -5,6 +5,7 @@ import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
 import fastifyCors from '@fastify/cors'
 import dateFns from 'date-fns'
+import agnosticAddDays from './agnostic-add-days.mjs'
 import 'dotenv/config'
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
@@ -86,7 +87,6 @@ async function run () {
   )
 
   const files = fs.readdirSync(`${workDir}/miner-info-subset-latest`)
-
   const dates = []
   for (const file of files) {
     const match = file.match(/miner-info-subset-latest-(.*)\.json/)
@@ -134,17 +134,4 @@ try {
   run()
 } catch (e) {
   console.error('Error', e)
-}
-
-function agnosticAddDays(date, amount) {
-  // https://github.com/date-fns/date-fns/issues/571#issuecomment-602496322
-  const originalTZO = date.getTimezoneOffset();
-  const endDate = dateFns.addDays(date, amount);
-  const endTZO = endDate.getTimezoneOffset();
-
-  const dstDiff = originalTZO - endTZO;
-
-  return dstDiff >= 0
-    ? dateFns.addMinutes(endDate, dstDiff)
-    : dateFns.subMinutes(endDate, Math.abs(dstDiff));
 }
