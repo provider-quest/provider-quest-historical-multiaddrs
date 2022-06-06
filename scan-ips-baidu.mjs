@@ -104,6 +104,7 @@ async function run () {
   }
 
   date_loop: for (const date of dates) {
+    // break
     const jsonFilename = `ips-baidu-${date}.json`
     const dest =`${outputDir}/${jsonFilename}`
     if (fs.existsSync(dest)) {
@@ -161,6 +162,10 @@ async function run () {
           }
           for (const record of ipsBaidu.records) {
             const { ip, ...rest } = record
+            if (rest.baidu?.status === 302) {
+              console.error('Baidu rate limit hit! Exiting.')
+              break date_loop
+            }
             output.ipsBaidu[ip] = rest
           }
           fs.writeFileSync(dest, JSON.stringify(output, null, 2))
