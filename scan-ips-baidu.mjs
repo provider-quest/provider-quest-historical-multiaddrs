@@ -160,6 +160,7 @@ async function run () {
             epoch: currentEpoch,
             ipsBaidu: latestIpsBaiduReport.ipsBaidu
           }
+          console.log('Records:', ipsBaidu.records.length)
           for (const record of ipsBaidu.records) {
             const { ip, ...rest } = record
             if (rest.baidu?.status === 302) {
